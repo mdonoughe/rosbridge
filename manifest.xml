@@ -1,0 +1,19 @@
+<package>
+  <description brief="rosjs">
+rosjs is a lightweight Javascript binding allowing ROS use from any websocket-capable web browser. See http://code.google.com/p/brown-ros-pkg/wiki/rosjs for documentation.
+  </description>
+
+  <author>Graylin Trevor Jay</author>
+  <email>tjay@cs.brown.edu</email>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+
+  <depend package="sensor_msgs"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+  <depend package="rospy"/>
+  <depend package="std_msgs"/>
+
+</package>
+
+
