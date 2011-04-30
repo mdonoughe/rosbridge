@@ -1,6 +1,6 @@
 <package>
-  <description brief="rosjs">
-rosjs is a lightweight Javascript binding allowing ROS use from any websocket-capable web browser. See http://code.google.com/p/brown-ros-pkg/wiki/rosjs for documentation.
+  <description brief="rosbridge">
+rosbridge allows dynamic socket and web-socket based access to the full capabilities of ROS. A lightweight binding to Javascript for websocket-capable web browsers is included, but access from any language supporting sockets and JSON is easy.
   </description>
 
   <author>Graylin Trevor Jay</author>
