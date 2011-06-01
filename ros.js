@@ -1,6 +1,6 @@
 var ros = ros || {};
 
-var Connection = function(url) {
+ros.Connection = function(url) {
   this.handlers = new Array();
 
   this.nextCallback = 0;
@@ -33,37 +33,35 @@ var Connection = function(url) {
   }
 }
 
-Connection.prototype.callService = function(service, msg, callback) {
+ros.Connection.prototype.callService = function(service, msg, callback) {
   this.callbacks[this.nextCallback] = callback;
   this.socket.send(JSON.stringify({receiver:service,callback:this.nextCallback++,msg:msg}));
 }
 
-Connection.prototype.publish = function(topic, typeStr, msg) {
+ros.Connection.prototype.publish = function(topic, typeStr, msg) {
   typeStr.replace(/^\//,'');
   this.socket.send(JSON.stringify({receiver:topic,msg:msg,type:typeStr}));
 }
 
-Connection.prototype.addHandler = function(topic, func) {
+ros.Connection.prototype.addHandler = function(topic, func) {
   if (!(topic in this.handlers)) {
     this.handlers[topic] = new Array();
   }
   this.handlers[topic].push(func);
 }
 
-Connection.prototype.setOnError = function(func) {
+ros.Connection.prototype.setOnError = function(func) {
   this.socket.onerror = func;
 }
 
-Connection.prototype.setOnClose = function(func) {
+ros.Connection.prototype.setOnClose = function(func) {
   this.socket.onclose = func;
 }
 
-Connection.prototype.setOnOpen = function(func) {
+ros.Connection.prototype.setOnOpen = function(func) {
   this.socket.onopen = func;
 }
 
-Connection.prototype.setOnMessage = function(func) {
+ros.Connection.prototype.setOnMessage = function(func) {
   this.onmessage = func;
 }
-
-ros.Connection = Connection;
