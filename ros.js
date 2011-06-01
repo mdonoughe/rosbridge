@@ -18,12 +18,7 @@ var Connection = function(url) {
       }
     }
 
-    var call = ''; 
-    try {
-      eval('call = ' + e.data);
-    } catch(err) {
-      return;
-    }
+    var call = JSON.parse(e.data);
 
     if (call.callback !== undefined) {
       var handler = ths.callbacks[call.callback];
@@ -41,20 +36,14 @@ var Connection = function(url) {
 
 }
 
-Connection.prototype.callService = function(service, json, callback) {
+Connection.prototype.callService = function(service, msg, callback) {
   this.callbacks[this.nextCallback] = callback;
-  var call = '{"receiver":"' + service + '"';
-  call += ',"callback":' + this.nextCallback++;
-  call += ',"msg":' + json + '}';
-  this.socket.send(call);
+  this.socket.send(JSON.stringify({receiver:service,callback:this.nextCallback++,msg:msg}));
 }
 
-Connection.prototype.publish = function(topic, typeStr, json) {
+Connection.prototype.publish = function(topic, typeStr, msg) {
   typeStr.replace(/^\//,'');
-  var call = '{"receiver":"' + topic + '"';
-  call += ',"msg":' + json;
-  call += ',"type":"' + typeStr + '"}';
-  this.socket.send(call);
+  this.socket.send(JSON.stringify({receiver:topic,msg:msg,type:typeStr}));
 }
 
 Connection.prototype.addHandler = function(topic, func) {
