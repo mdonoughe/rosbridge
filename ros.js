@@ -8,6 +8,8 @@ ros.Connection = function(url) {
 
   this.socket = new WebSocket(url);
   this.onmessage = null;
+  this.onopen = null;
+  this.onclose = null;
   var ths = this;
   this.socket.onmessage = function(e) {
     if(ths.onmessage) {
@@ -31,6 +33,16 @@ ros.Connection = function(url) {
       }
     }
   }
+  this.socket.onopen = function(e) {
+    if (ths.onopen) {
+      ths.onopen(e);
+    }
+  }
+  this.socket.onclose = function(e) {
+    if (ths.onclose) {
+      ths.onclose(e);
+    }
+  }
 }
 
 ros.Connection.prototype.callService = function(service, msg, callback) {
@@ -48,16 +60,4 @@ ros.Connection.prototype.addHandler = function(topic, func) {
     this.handlers[topic] = new Array();
   }
   this.handlers[topic].push(func);
-}
-
-ros.Connection.prototype.setOnClose = function(func) {
-  this.socket.onclose = func;
-}
-
-ros.Connection.prototype.setOnOpen = function(func) {
-  this.socket.onopen = func;
-}
-
-ros.Connection.prototype.setOnMessage = function(func) {
-  this.onmessage = func;
 }
