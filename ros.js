@@ -14,11 +14,11 @@ ros.Connection = function(url) {
     if (call.callback !== undefined) {
       var handler = ths.callbacks[call.callback];
       delete ths.callbacks[call.callback];
-      handler(call.msg);
+      handler[0](call.msg, handler[1]);
     } else {
       for (var i in ths.handlers[call.receiver]) {
         var handler = ths.handlers[call.receiver][i];
-        handler(call.msg);
+        handler[0](call.msg, handler[1]);
       }
     }
   }
@@ -34,8 +34,8 @@ ros.Connection = function(url) {
   }
 }
 
-ros.Connection.prototype.callService = function(service, msg, callback) {
-  this.callbacks[this.nextCallback] = callback;
+ros.Connection.prototype.callService = function(service, msg, callback, data) {
+  this.callbacks[this.nextCallback] = [callback, data];
   this.socket.send(JSON.stringify({receiver:service,callback:this.nextCallback++,msg:msg}));
 }
 
@@ -44,9 +44,9 @@ ros.Connection.prototype.publish = function(topic, typeStr, msg) {
   this.socket.send(JSON.stringify({receiver:topic,msg:msg,type:typeStr}));
 }
 
-ros.Connection.prototype.addHandler = function(topic, func) {
+ros.Connection.prototype.addHandler = function(topic, func, data) {
   if (!(topic in this.handlers)) {
     this.handlers[topic] = new Array();
   }
-  this.handlers[topic].push(func);
+  this.handlers[topic].push([func, data]);
 }
