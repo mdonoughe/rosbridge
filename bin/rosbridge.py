@@ -9,17 +9,18 @@ from urllib2 import urlopen
 import re
 
 class ServiceCaller(Thread):
-	def __init__(self, ros, session, service, arguments):
+	def __init__(self, ros, session, service, arguments, callback):
 		Thread.__init__(self)
 		self.daemon = True
 		self.ros = ros
 		self.session = session
 		self.service = service
 		self.arguments = arguments
+		self.callback = callback
 
 	def run(self):
 		def handleResponse(rsp):
-			call = {'receiver':self.service,'msg':self.ros.generalize(rsp)}
+			call = {'callback':self.callback,'msg':self.ros.generalize(rsp)}
 			self.session.sock.send(encode(call))
 		self.ros.callService(self.service,self.arguments,handleResponse)
 
@@ -54,13 +55,15 @@ def handleFrameHelper(frame, session, handleMsgFactory, sub, keyurl, ros):
 
 		else:
 			#print "Service Call!"
+			callback = call["callback"]
 			if (not keyurl or (now - session.rosjsExtStarted <= session.rosjsExtDuration) or receiver.find('/rosjs/authorize') == 0):
 				if receiver.find('/rosjs') == 0:
+					call = {'callback':callback}
 					if (receiver == "/rosjs/topics"):
-						call = {'receiver':'/rosjs/topics','msg':ros.topics}
+						call['msg'] = ros.topics
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/services"):
-						call = {'receiver':'/rosjs/services','msg':ros.services}
+						call['msg'] = ros.services
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/subscribe"):
 						topic = msg[0].encode('ascii','ignore')
@@ -70,7 +73,7 @@ def handleFrameHelper(frame, session, handleMsgFactory, sub, keyurl, ros):
 							session.data[topic] = {'delay':delay,'lastEmission':0,'lastSeq':0,'encoding':msg[2],'width':msg[3],'height':msg[4],'quality':msg[5]}
 						else:
 							session.data[topic] = {'delay':delay,'lastEmission':0,'lastSeq':0}
-						call = {'receiver':'/rosjs/subscribe','msg':'OK'}
+						call['msg'] = 'OK'
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/log"):
 						filename = msg[0].encode('ascii','ignore')
@@ -85,9 +88,9 @@ def handleFrameHelper(frame, session, handleMsgFactory, sub, keyurl, ros):
 						except:
 							success = False
 
-						call = {'receiver':'/rosjs/log','msg':'OK'}
+						call['msg'] = 'OK'
 						if (not success):
-							call = {'receiver':'/rosjs/log','msg':'ERROR'}
+							call['msg'] = 'ERROR'
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/authorize"):
 						key = msg[0].encode('ascii','ignore')
@@ -99,45 +102,45 @@ def handleFrameHelper(frame, session, handleMsgFactory, sub, keyurl, ros):
 						session.rosjsExtStarted = now
 						session.rosjsExtDuration = duration
 						print "authorizing %s for %s seconds" % (key,duration)
-						call = {'receiver':'/rosjs/authorize','msg':'OK'}
+						call['msg'] = 'OK'
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/typeStringFromTopic"):
 						topic = msg[0].encode('ascii','ignore')
-						call = {'receiver':'/rosjs/typeStringFromTopic','msg':ros.typeStringFromTopic(topic)}
+						call['msg'] = ros.typeStringFromTopic(topic)
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/typeStringFromService"):
 						service = msg[0].encode('ascii','ignore');
-						call = {'receiver':'/rosjs/typeStringFromService','msg':ros.typeStringFromService(service)}
+						call['msg'] = ros.typeStringFromService(service)
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/msgClassFromTypeString"):
 						typStr = msg[0].encode('ascii','ignore');
-						call = {'receiver':'/rosjs/msgClassFromTypeString','msg':ros.generalize(ros.msgClassFromTypeString(typStr)())}
+						call['msg'] = ros.generalize(ros.msgClassFromTypeString(typStr)())
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/reqClassFromTypeString"):
 						typStr = msg[0].encode('ascii','ignore');
-						call = {'receiver':'/rosjs/reqClassFromTypeString','msg':ros.generalize(ros.srvClassFromTypeString(typStr)._request_class())}
+						call['msg'] = ros.generalize(ros.srvClassFromTypeString(typStr)._request_class())
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/rspClassFromTypeString"):
 						typStr = msg[0].encode('ascii','ignore');
-						call = {'receiver':'/rosjs/rspClassFromTypeString','msg':ros.generalize(ros.srvClassFromTypeString(typStr)._response_class())}
+						call['msg'] = ros.generalize(ros.srvClassFromTypeString(typStr)._response_class())
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/classFromTopic"):
 						topic = msg[0].encode('ascii','ignore')
-						call = {'receiver':'/rosjs/classFromTopic','msg':ros.generalize(ros.classFromTopic(topic)())}
+						call['msg'] = ros.generalize(ros.classFromTopic(topic)())
 						session.sock.send(encode(call))
 					elif (receiver == "/rosjs/classesFromService"):
 						service = msg[0].encode('ascii','ignore')
-						call = {'receiver':'/rosjs/classesFromService','msg':{'req':ros.generalize(ros.classFromService(service)._request_class()),'rsp':ros.generalize(ros.classFromService(service)._response_class())}}
+						call['msg'] = {'req':ros.generalize(ros.classFromService(service)._request_class()),'rsp':ros.generalize(ros.classFromService(service)._response_class())}
 						session.sock.send(encode(call))
 				else:
 					idx = receiver.find('protected')
 					if idx >= 0 and idx <=1:
 						print "ignoring call to protected service"
-						call = {'receiver':'nop','msg':{}}
+						call = {'callback':callback,'msg':{}}
 						session.sock.send(encode(call))
 					else:
 						cls = ros.classFromService(receiver)
-						serviceCaller = ServiceCaller(ros,session,receiver,ros.specify(cls._request_class._slot_types,msg))
+						serviceCaller = ServiceCaller(ros,session,receiver,ros.specify(cls._request_class._slot_types,msg),callback)
 						serviceCaller.start()
 
 	except:

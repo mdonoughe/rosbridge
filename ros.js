@@ -3,6 +3,9 @@ var ros = ros || {};
 var Connection = function(url) {
   this.handlers = new Array();
 
+  this.nextCallback = 0;
+  this.callbacks = {};
+
   this.socket = new WebSocket(url);
   this.onmessage = null;
   var ths = this;
@@ -22,9 +25,15 @@ var Connection = function(url) {
       return;
     }
 
-    for (var i in ths.handlers[call.receiver]) {
-      var handler = ths.handlers[call.receiver][i]
+    if (call.callback !== undefined) {
+      var handler = ths.callbacks[call.callback];
+      delete ths.callbacks[call.callback];
       handler(call.msg);
+    } else {
+      for (var i in ths.handlers[call.receiver]) {
+        var handler = ths.handlers[call.receiver][i]
+        handler(call.msg);
+      }
     }
   }
 
@@ -33,8 +42,9 @@ var Connection = function(url) {
 }
 
 Connection.prototype.callService = function(service, json, callback) {
-  this.handlers[service] = new Array(callback);
+  this.callbacks[this.nextCallback] = callback;
   var call = '{"receiver":"' + service + '"';
+  call += ',"callback":' + this.nextCallback++;
   call += ',"msg":' + json + '}';
   this.socket.send(call);
 }
