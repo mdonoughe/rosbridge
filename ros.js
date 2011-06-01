@@ -1,7 +1,7 @@
 var ros = ros || {};
 
 ros.Connection = function(url) {
-  this.handlers = new Array();
+  this.handlers = {};
 
   this.nextCallback = 0;
   this.callbacks = {};
