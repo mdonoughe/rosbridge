@@ -7,8 +7,6 @@ ros.Connection = function(url) {
   this.callbacks = {};
 
   this.socket = new WebSocket(url);
-  this.onopen = null;
-  this.onclose = null;
   var ths = this;
   this.socket.onmessage = function(e) {
     var call = JSON.parse(e.data);
@@ -25,12 +23,12 @@ ros.Connection = function(url) {
     }
   }
   this.socket.onopen = function(e) {
-    if (ths.onopen) {
+    if (ths.onopen !== undefined) {
       ths.onopen(e);
     }
   }
   this.socket.onclose = function(e) {
-    if (ths.onclose) {
+    if (ths.onclose !== undefined) {
       ths.onclose(e);
     }
   }
