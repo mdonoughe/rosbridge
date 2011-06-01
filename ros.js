@@ -7,15 +7,10 @@ ros.Connection = function(url) {
   this.callbacks = {};
 
   this.socket = new WebSocket(url);
-  this.onmessage = null;
   this.onopen = null;
   this.onclose = null;
   var ths = this;
   this.socket.onmessage = function(e) {
-    if(ths.onmessage) {
-      ths.onmessage(e);
-    }
-
     var call = JSON.parse(e.data);
 
     if (call.callback !== undefined) {
