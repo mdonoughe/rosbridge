@@ -31,9 +31,6 @@ var Connection = function(url) {
       }
     }
   }
-
-  this.magicServices = new Array('/rosjs/topics','/rosjs/services','/rosjs/typeStringFromTopic','/rosjs/typeStringFromService','/rosjs/msgClassFromTypeString','/rosjs/reqClassFromTypeString','/rosjs/rspClassFromTypeString','/rosjs/classFromTopic','/rosjs/classesFromService');
-
 }
 
 Connection.prototype.callService = function(service, msg, callback) {
