@@ -50,10 +50,6 @@ ros.Connection.prototype.addHandler = function(topic, func) {
   this.handlers[topic].push(func);
 }
 
-ros.Connection.prototype.setOnError = function(func) {
-  this.socket.onerror = func;
-}
-
 ros.Connection.prototype.setOnClose = function(func) {
   this.socket.onclose = func;
 }
