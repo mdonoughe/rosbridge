@@ -17,7 +17,7 @@ ros.Connection = function(url) {
       handler(call.msg);
     } else {
       for (var i in ths.handlers[call.receiver]) {
-        var handler = ths.handlers[call.receiver][i]
+        var handler = ths.handlers[call.receiver][i];
         handler(call.msg);
       }
     }
