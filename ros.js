@@ -13,11 +13,7 @@ ros.Connection = function(url) {
   var ths = this;
   this.socket.onmessage = function(e) {
     if(ths.onmessage) {
-      try {
-        ths.onmessage(e);
-      } catch(err) {
-        ros_debug(err);
-      }
+      ths.onmessage(e);
     }
 
     var call = JSON.parse(e.data);
