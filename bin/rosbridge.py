@@ -54,7 +54,6 @@ if __name__ == "__main__":
 				rospy.Subscriber(topic, cls, handler, queue_size=1)
 
 		def frameReceived(self, frame):
-			print(frame)
 			call = json.loads(frame)
 			receiver = call["receiver"]
 			msg = call["msg"]
@@ -184,7 +183,6 @@ if __name__ == "__main__":
 			self.transport.write(encode({'callback':callback,'msg':'ERROR'}))
 
 		def doDeauth(self):
-			print('deauth')
 			self.authed = False
 
 		def sendLatest(self, topic):
