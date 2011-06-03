@@ -1,11 +1,13 @@
 #!/usr/bin/python
 from ROSProxy import ROSProxy
+import roslib
 import rospy; rospy.init_node('rosjs')
 import sys, traceback
 import json
 from threading import Thread
 from twisted.internet import reactor
 from twisted.web.static import File
+from twisted.web.resource import Resource
 from websocket import WebSocketHandler, WebSocketSite
 from time import time
 from urllib2 import urlopen
@@ -24,6 +26,9 @@ if __name__ == "__main__":
 	keyurl = rospy.get_param('/brown/rosjs/keyurl','')
 	host = rospy.get_param('/brown/rosjs/host','')
 	port = rospy.get_param('/brown/rosjs/port',9090)
+	wspath = rospy.get_param('/brown/rosjs/wspath','/')
+	jsfile = rospy.get_param('/brown/rosjs/jsfile','ros.js')
+	docroot = rospy.get_param('/brown/rosjs/docroot',None)
 
 	class Handler(WebSocketHandler):
 		def connectionMade(self):
@@ -256,12 +261,14 @@ if __name__ == "__main__":
 		thread.start()
 	reactor.callWhenRunning(run_ros_thread)
 
-	#TODO: this path should be read from a preference with a different default
-	root = File('.')
-	#TODO: this should probably support exporting the script on top of a user specified file system
+	if docroot:
+		root = File(docroot)
+	else:
+		root = Resource()
+	if jsfile:
+		root.putChild(jsfile, File(roslib.packages.resource_file('rosbridge', '', 'ros.js')))
 	site = WebSocketSite(root)
-	#TODO: this path should be read from a preference
-	site.addHandler('/ws', wsHandlerFactory)
+	site.addHandler(wspath, wsHandlerFactory)
 	# 50 is the default backlog size
 	reactor.listenTCP(port, site, 50, host)
 	reactor.run()

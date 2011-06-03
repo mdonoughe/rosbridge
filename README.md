@@ -37,3 +37,12 @@ works fine.
 
 Note: the included txWebSocket is a slightly modified version from
 https://github.com/mdonoughe/txWebSocket .
+
+Setting wspath changes the path to the websocket. By default, the path is '/',
+so you'd connect with 'ws://localhost:9090/'.
+
+You'll probably want to change wspath if you set docroot, which causes a
+folder to be exposed at 'http://localhost:9090/'.
+
+You can use jsfile(default is 'ros.js') to make the ros.js file visible at
+'http://localhost:9090/ros.js', or set it to '' to make it disappear.
