@@ -34,3 +34,6 @@ I was having an issue with terribleWSS using 100% CPU on my test machine, so I
 replaced it with txWebSocket and Twisted. txWebSocket is included in the bin
 directory, but Twisted must be installed manually. python-twisted from Debian
 works fine.
+
+Note: the included txWebSocket is a slightly modified version from
+https://github.com/mdonoughe/txWebSocket .
