@@ -8,9 +8,9 @@ from threading import Thread
 from twisted.internet import reactor
 from twisted.web.static import File
 from twisted.web.resource import Resource
+from twisted.web.client import getPage
 from websocket import WebSocketHandler, WebSocketSite
 from time import time
-from urllib2 import urlopen
 import re
 
 def encode(obj):
@@ -36,6 +36,7 @@ if __name__ == "__main__":
 			self.publishers = {}
 			self.subscribers = {}
 			self.authed = not self.keyurl
+                        self.deauth = None
 			self.openSockets.append(self)
 
 		def sub(self, topic, handler):
@@ -109,7 +110,9 @@ if __name__ == "__main__":
 						elif (receiver == "/rosjs/authorize"):
 							key = msg[0].encode('ascii','ignore')
 							if (self.keyurl):
-								reactor.callInThread(self.doAuth, self, key, callback)
+								get = getPage(self.keyurl + '?jsonp=invoke&key=' + key)
+								get.addCallback(self.doAuth, callback)
+								get.addErrback(self.failAuth, callback)
 							else:
 								call['msg'] = 'OK'
 								self.transport.write(encode(call))
@@ -160,27 +163,25 @@ if __name__ == "__main__":
 			if not self.authed:
 				self.transport.loseConnection()
 
-		# runs in a background thread
-		def doAuth(self, key, callback):
-			duration = 0
+		def doAuth(self, body, callback):
 			try:
-				req = urlopen(self.keyurl + '?jsonp=invoke&key=' + key)
-				req = req.read()
-				duration = int(re.sub('[^0-9]','',req))
+				duration = int(re.sub('[^0-9]','',body))
 			except e:
-				print('auth error: %s' % e)
-			reactor.callFromThread(self.finishAuth, self, duration)
-
-		def finishAuth(self, duration, callback):
-			if duration > 0:
-				self.authed = True
-				if self.deauth and self.deauth.active():
-					self.deauth.reset(duration)
-				else:
-					self.deauth = reactor.callLater(duration, self.doDeauth, self)
-				self.transport.write(encode({'callback':callback,'msg':'OK'}))
+				self.failAuth(e, callback)
+				return
+			if duration < 1:
+				self.failAuth('duration=0', callback)
+				return
+			self.authed = True
+			if self.deauth and self.deauth.active():
+				self.deauth.reset(duration)
 			else:
-				self.transport.write(encode({'callback':callback,'msg':'ERROR'}))
+				self.deauth = reactor.callLater(duration, self.doDeauth)
+			self.transport.write(encode({'callback':callback,'msg':'OK'}))
+
+		def failAuth(self, error, callback):
+			print('auth error: %s' % error)
+			self.transport.write(encode({'callback':callback,'msg':'ERROR'}))
 
 		def doDeauth(self):
 			print('deauth')
