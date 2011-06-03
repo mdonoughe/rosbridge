@@ -14,7 +14,9 @@ ros.Connection = function(url) {
     if (call.callback !== undefined) {
       var handler = ths.callbacks[call.callback];
       delete ths.callbacks[call.callback];
-      handler[0](call.msg, handler[1]);
+      if (handler[0]) {
+        handler[0](call.msg, handler[1]);
+      }
     } else {
       for (var i in ths.handlers[call.receiver]) {
         var handler = ths.handlers[call.receiver][i];
