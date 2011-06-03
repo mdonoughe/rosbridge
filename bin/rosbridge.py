@@ -22,34 +22,8 @@ if __name__ == "__main__":
 	openSockets = []
 
 	keyurl = rospy.get_param('/brown/rosjs/keyurl','')
-	if "--keyurl" in sys.argv:
-		idx = sys.argv.index("--keyurl")+1
-		if idx < len(sys.argv):
-			keyurl = sys.argv[idx]
-			print "Only users with keys from %s will be accepted." % (keyurl,)
-		else:
-			print "Please provide the URL of the keyserver."
-			sys.exit(-1)
-
 	host = rospy.get_param('/brown/rosjs/host','')
-	if "--host" in sys.argv:
-		idx = sys.argv.index("--host")+1
-		if idx < len(sys.argv):
-			host = sys.argv[idx]
-			print "rosjs is bound to %s." % (host,)
-		else:
-			print "Please provide a hostname."
-			sys.exit(-1)
-
 	port = rospy.get_param('/brown/rosjs/port',9090)
-	if "--port" in sys.argv:
-		idx = sys.argv.index("--port")+1
-		if idx < len(sys.argv):
-			port = int(sys.argv[idx])
-			print "rosjs is will use port %s." % (port,)
-		else:
-			print "Please provide a port number."
-			sys.exit(-1)
 
 	class Handler(WebSocketHandler):
 		def connectionMade(self):
