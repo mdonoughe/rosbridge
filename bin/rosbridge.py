@@ -6,7 +6,7 @@ import json
 from threading import Thread
 from twisted.internet import reactor
 from twisted.web.static import File
-from twisted.web.websocket import WebSocketHandler, WebSocketSite
+from websocket import WebSocketHandler, WebSocketSite
 from time import time
 from urllib2 import urlopen
 import re
