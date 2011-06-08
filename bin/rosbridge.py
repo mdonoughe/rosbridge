@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from ROSProxy import ROSProxy
 import roslib
 import rospy; rospy.init_node('rosjs')
