@@ -23,12 +23,12 @@ if __name__ == "__main__":
 	latest = {}
 	openSockets = []
 
-	keyurl = rospy.get_param('/brown/rosjs/keyurl','')
-	host = rospy.get_param('/brown/rosjs/host','')
-	port = rospy.get_param('/brown/rosjs/port',9090)
-	wspath = rospy.get_param('/brown/rosjs/wspath','/')
-	jsfile = rospy.get_param('/brown/rosjs/jsfile','ros.js')
-	docroot = rospy.get_param('/brown/rosjs/docroot',None)
+	keyurl = rospy.get_param('~keyurl','')
+	host = rospy.get_param('~host','')
+	port = rospy.get_param('~port',9090)
+	wspath = rospy.get_param('~wspath','/')
+	jsfile = rospy.get_param('~jsfile','ros.js')
+	docroot = rospy.get_param('~docroot',None)
 
 	class Handler(WebSocketHandler):
 		def connectionMade(self):
