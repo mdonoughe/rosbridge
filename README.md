@@ -11,10 +11,10 @@ same time with different callbacks. This doesn't change the appearance of the
 JavaScript API, but it *does* change its behavior to work like you'd expect.
 As a result, the following code now prints 1 and 2 rather than 2 and 2.
 
-    connection.callService('/rosjs/subscribe', ['/test',0], function(rsp) {
+    connection.callService('/rosjs/subscribe', ['/test1',0], function(rsp) {
       console.log('1');
     });
-    connection.callService('/rosjs/subscribe', ['/test',0], function(rsp) {
+    connection.callService('/rosjs/subscribe', ['/test2',0], function(rsp) {
       console.log('2');
     });
 
