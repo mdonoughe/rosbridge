@@ -53,6 +53,9 @@ folder to be exposed at 'http://localhost:9090/'.
 You can use jsfile(default is 'ros.js') to make the ros.js file visible at
 'http://localhost:9090/ros.js', or set it to '' to make it disappear.
 
+Parameters are now referenced as ~param instead of /brown/rosbridge/param.
+This means that you can easily set params in roslaunch like you'd expect.
+
 ## Example
 
 I'm using the following configuration with roslaunch to host a web application
