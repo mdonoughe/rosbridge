@@ -36,7 +36,7 @@ if __name__ == "__main__":
 			self.publishers = {}
 			self.subscribers = {}
 			self.authed = not self.keyurl
-                        self.deauth = None
+			self.deauth = None
 			self.openSockets.append(self)
 
 		def sub(self, topic, handler):
