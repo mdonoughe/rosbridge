@@ -82,12 +82,16 @@ if __name__ == "__main__":
 						elif (receiver == "/rosjs/subscribe"):
 							topic = msg[0].encode('ascii','ignore')
 							delay = msg[1]
-							self.sub(topic, handleMsgFactory(topic))
-							if len(msg) > 2:
-								self.subscribers[topic] = {'delay':delay,'lastEmission':0,'lastSeq':0,'encoding':msg[2],'width':msg[3],'height':msg[4],'quality':msg[5]}
+							try:
+								self.sub(topic, handleMsgFactory(topic))
+							except Exception as e:
+								call['msg'] = 'ERROR'
 							else:
-								self.subscribers[topic] = {'delay':delay,'lastEmission':0,'lastSeq':0}
-							call['msg'] = 'OK'
+								if len(msg) > 2:
+									self.subscribers[topic] = {'delay':delay,'lastEmission':0,'lastSeq':0,'encoding':msg[2],'width':msg[3],'height':msg[4],'quality':msg[5]}
+								else:
+									self.subscribers[topic] = {'delay':delay,'lastEmission':0,'lastSeq':0}
+								call['msg'] = 'OK'
 							self.transport.write(encode(call))
 						elif (receiver == "/rosjs/log"):
 							filename = msg[0].encode('ascii','ignore')
