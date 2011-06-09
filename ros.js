@@ -71,7 +71,7 @@ ros.Connection.prototype.publish = function(topic, typeStr, msg) {
   this.socket.send(JSON.stringify({receiver:topic,msg:msg,type:typeStr}));
 }
 
-// topic = topic to listen for. note that you must call /rosjs/subscribe first the event will never fire.
+// topic = topic to listen for. note that you must call /rosjs/subscribe first or the event will never fire.
 // func = function(msg, ...) to call when a message is received.
 // args = {
 // context: context used when calling the callback. Defaults to the connection.
