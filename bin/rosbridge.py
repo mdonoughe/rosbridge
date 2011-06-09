@@ -28,7 +28,7 @@ if __name__ == "__main__":
 	port = rospy.get_param('~port',9090)
 	wspath = rospy.get_param('~wspath','/')
 	jsfile = rospy.get_param('~jsfile','ros.js')
-	docroot = rospy.get_param('~docroot',None)
+	docroot = rospy.get_param('~docroot','')
 
 	class Handler(WebSocketHandler):
 		def connectionMade(self):
