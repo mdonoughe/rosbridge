@@ -73,10 +73,16 @@ class ROSProxy(object):
 		return self.__classFromTypeString(typeString, 'srv')
 
 	def classFromTopic(self, topic):
-		return self.msgClassFromTypeString(self.typeStringFromTopic(topic))
+		typeString = self.typeStringFromTopic(topic)
+		if typeString is None:
+			return None
+		return self.msgClassFromTypeString(typeString)
 
 	def classFromService(self, service):
-		return self.srvClassFromTypeString(self.typeStringFromService(service))
+		typeString = self.typeStringFromService(service)
+		if typeString is None:
+			return None
+		return self.srvClassFromTypeString(typeString)
 
 	def callService(self, service, arguments, callback=False, wait=True):
 		def defCallback(x):
