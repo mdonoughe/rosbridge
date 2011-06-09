@@ -134,14 +134,9 @@ if __name__ == "__main__":
 								filename = ''.join(c for c in filename if c.isalnum()) + '.log'
 								obj = msg[1];
 
-								try:
-									log = open(filename, 'w')
+								with open(filename, 'w') as log:
 									log.write(obj)
-									log.close()
-								except:
-									call['msg'] = 'ERROR'
-								else:
-									call['msg'] = 'OK'
+								call['msg'] = 'OK'
 
 								self.transport.write(encode(call))
 							elif (receiver == "/rosjs/authorize"):
