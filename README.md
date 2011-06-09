@@ -1,4 +1,4 @@
-This is similar to [rosbridge](http://www.ros.org/wiki/rosbridge) from
+This is modified from [rosbridge](http://www.ros.org/wiki/rosbridge) from
 brown_remotelab.
 
 I've changed services to have callbacks like this:
