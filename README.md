@@ -1,6 +1,10 @@
 This is a very modified version of
 [rosbridge](http://www.ros.org/wiki/rosbridge) from brown_remotelab.
 
+See the [wiki](https://github.com/mdonoughe/rosbridge/wiki) for documentation.
+
+## Changes
+
 I've changed services to have callbacks like this:
 
 ```javascript
