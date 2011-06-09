@@ -52,3 +52,20 @@ folder to be exposed at 'http://localhost:9090/'.
 
 You can use jsfile(default is 'ros.js') to make the ros.js file visible at
 'http://localhost:9090/ros.js', or set it to '' to make it disappear.
+
+## Example
+
+I'm using the following configuration with roslaunch to host a web application
+at http://0.0.0.0:9090/:
+
+```xml
+<node pkg="rosbridge" type="rosbridge.py" name="bridge">
+  <param name="wspath" value="/ws"/>
+  <param name="docroot" value="$(find aslam_input)/docroot"/>
+</node>
+```
+
+A file index.html in the aslam_input/docroot includes /ros.js(automatically
+provided by rosbridge, not actually present in the docroot folder) and another
+script which uses `new ros.Connection('ws://' + location.host + '/ws');` to
+connect to the websocket without hardcoding an address.
