@@ -84,26 +84,13 @@ class ROSProxy(object):
 			return None
 		return self.srvClassFromTypeString(typeString)
 
-	def callService(self, service, arguments, callback=False, wait=True):
-		def defCallback(x):
-			pass
-
-		if callback == False:
-			callback = defCallback
-
+	def callService(self, service, arguments, wait=True):
 		if wait:
-			try:
-				rospy.wait_for_service(service)
-			except:
-				callback(None)
-				raise
-		try:
-			function = rospy.ServiceProxy(service, self.classFromService(service))
-			response = apply(function, arguments)
-			callback(response)
-		except:
-			callback(None)
-			raise
+			rospy.wait_for_service(service)
+
+		function = rospy.ServiceProxy(service, self.classFromService(service))
+		response = apply(function, arguments)
+		return response
 
 	def generalize(self, inst, encoding='jpg', width=160, height=120, qual=30):
 		if isinstance(inst, self.imgCls):

@@ -14,17 +14,39 @@ JavaScript API, but it *does* change its behavior to work like you'd expect.
 As a result, the following code now prints 1 and 2 rather than 2 and 2.
 
 ```javascript
-connection.callService('/rosjs/subscribe', ['/test1',0], function(rsp) {
-  console.log('1');
+connection.callService('/rosjs/subscribe', {
+  data: ['/test1', 0],
+  success: function(rsp) {
+    console.log('1');
+  }
 });
-connection.callService('/rosjs/subscribe', ['/test2',0], function(rsp) {
-  console.log('2');
+connection.callService('/rosjs/subscribe', {
+  data: ['/test2', 0],
+  success: function(rsp) {
+    console.log('2');
+  }
 });
 ```
 
-The JavaScript API has changed slightly. The event handlers are now just
-fields without setters, and there is no event handler for onerror because
-that's not part of the WebSocket spec.
+It is also possible for an error to be returned from a service call. The
+following code prints "Topic does not exist" unless /unpublishedTopic is
+actually published.
+
+```javascript
+connection.callService('/rosjs/subscribe', {
+  data: ['/unpublishedTopic', 0],
+  success: function(rsp) {
+    console.log('success');
+  },
+  error: function(rsp) {
+    console.log(rsp);
+  }
+});
+```
+
+The JavaScript API has changed. The event handlers are now just fields without
+setters, and there is no event handler for onerror because that's not part of
+the WebSocket spec.
 
 You can also pass an extra argument to addHandler and callService, which will
 be passed as a second argument to your callback function.
@@ -33,7 +55,7 @@ be passed as a second argument to your callback function.
 // print 'hello' to the console every time a message comes in on /test
 connection.addHandler('/test', function(msg, data) {
   console.write(data);
-}, 'hello');
+}, {arguments: ['hello']});
 ```
 
 I was having an issue with terribleWSS using 100% CPU on my test machine, so I

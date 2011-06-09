@@ -50,8 +50,47 @@ if __name__ == "__main__":
 
 			if not repeat:
 				print "subscribing to: %s" % (topic,)
-				cls = self.ros.classFromTopic(topic)
-				rospy.Subscriber(topic, cls, handler, queue_size=1)
+				rospy.Subscriber(topic, self.classFromTopic(topic), handler, queue_size=1)
+
+		def typeStringFromTopic(self, topic):
+			typStr = self.ros.typeStringFromTopic(topic)
+			if typStr is None:
+				raise NameError('Topic does not exist')
+			return typStr
+
+		def typeStringFromService(self, topic):
+			typStr = self.ros.typeStringFromService(topic)
+			if typStr is None:
+				raise NameError('Service does not exist')
+			return typStr
+
+		def msgClassFromTypeString(self, typStr):
+			cls = self.ros.msgClassFromTypeString(typStr)
+			if cls is None:
+				raise NameError('Class does not exist')
+			return cls
+
+		def srvClassFromTypeString(self, typStr):
+			cls = self.ros.srvClassFromTypeString(typStr)
+			if cls is None:
+				raise NameError('Class does not exist')
+			return cls
+
+		def classFromTopic(self, topic):
+			return self.msgClassFromTypeString(self.typeStringFromTopic(topic))
+
+		def classFromService(self, topic):
+			return self.srvClassFromTypeString(self.typeStringFromService(topic))
+
+		def callService(self, receiver, msg, callback):
+			call = {'callback':callback}
+			try:
+				self.ros.wait_for_service(receiver)
+				rsp = self.ros.callService(receiver, ros.specify(self.classFromService(receiver)._request_class.slot_types, msg))
+				call['msg'] = self.ros.generalize(rsp)
+			except Exception as e:
+				call['error'] = str(e)
+			reactor.callFromThread(self.transport.write, encode(call))
 
 		def frameReceived(self, frame):
 			call = json.loads(frame)
@@ -73,95 +112,87 @@ if __name__ == "__main__":
 				if self.authed or receiver.startswith('/rosjs/authorize'):
 					if receiver.startswith('/rosjs'):
 						call = {'callback':callback}
-						if (receiver == "/rosjs/topics"):
-							call['msg'] = ros.topics
-							self.transport.write(encode(call))
-						elif (receiver == "/rosjs/services"):
-							call['msg'] = ros.services
-							self.transport.write(encode(call))
-						elif (receiver == "/rosjs/subscribe"):
-							topic = msg[0].encode('ascii','ignore')
-							delay = msg[1]
-							try:
+						try:
+							if (receiver == "/rosjs/topics"):
+								call['msg'] = self.ros.topics
+								self.transport.write(encode(call))
+							elif (receiver == "/rosjs/services"):
+								call['msg'] = self.ros.services
+								self.transport.write(encode(call))
+							elif (receiver == "/rosjs/subscribe"):
+								topic = msg[0].encode('ascii','ignore')
+								delay = msg[1]
 								self.sub(topic, handleMsgFactory(topic))
-							except Exception as e:
-								call['msg'] = 'ERROR'
-							else:
 								if len(msg) > 2:
 									self.subscribers[topic] = {'delay':delay,'lastEmission':0,'lastSeq':0,'encoding':msg[2],'width':msg[3],'height':msg[4],'quality':msg[5]}
 								else:
 									self.subscribers[topic] = {'delay':delay,'lastEmission':0,'lastSeq':0}
 								call['msg'] = 'OK'
-							self.transport.write(encode(call))
-						elif (receiver == "/rosjs/log"):
-							filename = msg[0].encode('ascii','ignore')
-							filename = ''.join(c for c in filename if c.isalnum()) + '.log'
-							obj = msg[1];
-
-							success = True
-							try:
-								log = open(filename, 'w')
-								log.write(obj)
-								log.close()
-							except:
-								success = False
-
-							call['msg'] = 'OK'
-							if (not success):
-								call['msg'] = 'ERROR'
-							self.transport.write(encode(call))
-						elif (receiver == "/rosjs/authorize"):
-							key = msg[0].encode('ascii','ignore')
-							if (self.keyurl):
-								get = getPage(self.keyurl + '?jsonp=invoke&key=' + key)
-								get.addCallback(self.doAuth, callback)
-								get.addErrback(self.failAuth, callback)
-							else:
-								call['msg'] = 'OK'
 								self.transport.write(encode(call))
-						elif (receiver == "/rosjs/typeStringFromTopic"):
-							topic = msg[0].encode('ascii','ignore')
-							call['msg'] = ros.typeStringFromTopic(topic)
-							self.transport.write(encode(call))
-						elif (receiver == "/rosjs/typeStringFromService"):
-							service = msg[0].encode('ascii','ignore');
-							call['msg'] = ros.typeStringFromService(service)
-							self.transport.write(encode(call))
-						elif (receiver == "/rosjs/msgClassFromTypeString"):
-							typStr = msg[0].encode('ascii','ignore');
-							call['msg'] = ros.generalize(ros.msgClassFromTypeString(typStr)())
-							self.transport.write(encode(call))
-						elif (receiver == "/rosjs/reqClassFromTypeString"):
-							typStr = msg[0].encode('ascii','ignore');
-							call['msg'] = ros.generalize(ros.srvClassFromTypeString(typStr)._request_class())
-							self.transport.write(encode(call))
-						elif (receiver == "/rosjs/rspClassFromTypeString"):
-							typStr = msg[0].encode('ascii','ignore');
-							call['msg'] = ros.generalize(ros.srvClassFromTypeString(typStr)._response_class())
-							self.transport.write(encode(call))
-						elif (receiver == "/rosjs/classFromTopic"):
-							topic = msg[0].encode('ascii','ignore')
-							call['msg'] = ros.generalize(ros.classFromTopic(topic)())
-							self.transport.write(encode(call))
-						elif (receiver == "/rosjs/classesFromService"):
-							service = msg[0].encode('ascii','ignore')
-							call['msg'] = {'req':ros.generalize(ros.classFromService(service)._request_class()),'rsp':ros.generalize(ros.classFromService(service)._response_class())}
+							elif (receiver == "/rosjs/log"):
+								filename = msg[0].encode('ascii','ignore')
+								filename = ''.join(c for c in filename if c.isalnum()) + '.log'
+								obj = msg[1];
+
+								try:
+									log = open(filename, 'w')
+									log.write(obj)
+									log.close()
+								except:
+									call['msg'] = 'ERROR'
+								else:
+									call['msg'] = 'OK'
+
+								self.transport.write(encode(call))
+							elif (receiver == "/rosjs/authorize"):
+								key = msg[0].encode('ascii','ignore')
+								if (self.keyurl):
+									get = getPage(self.keyurl + '?jsonp=invoke&key=' + key)
+									get.addCallback(self.doAuth, callback)
+									get.addErrback(self.failAuth, callback)
+								else:
+									call['msg'] = 'OK'
+									self.transport.write(encode(call))
+							elif (receiver == "/rosjs/typeStringFromTopic"):
+								topic = msg[0].encode('ascii','ignore')
+								call['msg'] = self.typeStringFromTopic(topic)
+								self.transport.write(encode(call))
+							elif (receiver == "/rosjs/typeStringFromService"):
+								service = msg[0].encode('ascii','ignore');
+								call['msg'] = self.typeStringFromService(service)
+								self.transport.write(encode(call))
+							elif (receiver == "/rosjs/msgClassFromTypeString"):
+								typStr = msg[0].encode('ascii','ignore');
+								call['msg'] = ros.generalize(self.msgClassFromTypeString(typStr)())
+								self.transport.write(encode(call))
+							elif (receiver == "/rosjs/reqClassFromTypeString"):
+								typStr = msg[0].encode('ascii','ignore');
+								call['msg'] = ros.generalize(self.srvClassFromTypeString(typStr)._request_class())
+								self.transport.write(encode(call))
+							elif (receiver == "/rosjs/rspClassFromTypeString"):
+								typStr = msg[0].encode('ascii','ignore');
+								call['msg'] = ros.generalize(self.srvClassFromTypeString(typStr)._response_class())
+								self.transport.write(encode(call))
+							elif (receiver == "/rosjs/classFromTopic"):
+								topic = msg[0].encode('ascii','ignore')
+								call['msg'] = ros.generalize(self.classFromTopic(topic)())
+								self.transport.write(encode(call))
+							elif (receiver == "/rosjs/classesFromService"):
+								service = msg[0].encode('ascii','ignore')
+								cls = self.classFromService(service)
+								call['msg'] = {'req':ros.generalize(cls._request_class()),'rsp':ros.generalize(cls._response_class())}
+								self.transport.write(encode(call))
+						except Exception as e:
+							call['error'] = str(e)
 							self.transport.write(encode(call))
 					else:
 						idx = receiver.find('protected')
 						if idx >= 0 and idx <=1:
 							print "ignoring call to protected service"
-							# is this really the right thing to do?
-							call = {'callback':callback,'msg':{}}
+							call = {'callback':callback,'error':'Forbidden'}
 							self.transport.write(encode(call))
 						else:
-							cls = ros.classFromService(receiver)
-							def handleResponse(rsp):
-								def completeResponse():
-									call = {'callback':callback,'msg':self.ros.generalize(rsp)}
-									self.transport.write(encode(call))
-								reactor.callFromThread(completeResponse)
-							reactor.callInThread(self.ros.callService, self.ros, receiver, ros.specify(cls._request_class._slot_types,msg), handleResponse)
+							reactor.callInThread(self.callService, receiver, msg, callback)
 
 			if not self.authed:
 				self.transport.loseConnection()
