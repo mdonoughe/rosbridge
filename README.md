@@ -1,5 +1,5 @@
-This is modified from [rosbridge](http://www.ros.org/wiki/rosbridge) from
-brown_remotelab.
+This is a very modified version of
+[rosbridge](http://www.ros.org/wiki/rosbridge) from brown_remotelab.
 
 I've changed services to have callbacks like this:
 
