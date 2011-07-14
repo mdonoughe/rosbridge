@@ -85,7 +85,7 @@ if __name__ == "__main__":
 		def callService(self, receiver, msg, callback):
 			call = {'callback':callback}
 			try:
-				self.ros.wait_for_service(receiver)
+				# rosproxy automatically waits for the service
 				rsp = self.ros.callService(receiver, ros.specify(self.classFromService(receiver)._request_class.slot_types, msg))
 				call['msg'] = self.ros.generalize(rsp)
 			except Exception as e:
